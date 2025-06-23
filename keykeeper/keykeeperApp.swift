@@ -4,7 +4,7 @@ import SwiftUI
 struct keykeeperApp: App {
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            ContentView()
         }
     }
 }

@@ -3,22 +3,34 @@ import Combine
 
 @MainActor
 final class ListingsViewModel: ObservableObject {
-    // MARK: - Published свойства для UI
     @Published var listings: [SaleListing] = []
     @Published var isLoading = false
-    @Published var errorMessage: String?
+    @Published var error: String?
 
-    private let listingService = ListingService()
+    private let service = ListingService()
 
-    // MARK: - Загрузка объявлений
-    func loadListings() async {
-        isLoading = true
+    /// Загружает ленту по фильтру (или дефолтному).
+    func load(filter: ListingFilter = .init(page: 1, pageSize: 30,
+                                            minPrice: nil, maxPrice: nil,
+                                            roomCounts: nil, regionId: nil,
+                                            municipaliteId: nil, propertyTypeId: nil,
+                                            settlementId: nil, districtId: nil,
+                                            sortBy: "date", sortDesc: true)) async {
+        isLoading = true; error = nil
         defer { isLoading = false }
         do {
-            // пока просто берём первую страницу без фильтров
-            listings = try await listingService.fetchListing()
+            listings = try await service.fetchListing(filter: filter)
+
+            // — подгружаем первое фото для карточек
+            for idx in listings.indices {
+                let photos = try await service.fetchListingPhotos(listingId: listings[idx].id)
+                if let first = photos.first {
+                    listings[idx].coverPhotoURL =
+                        APIClient.shared.baseURL.appendingPathComponent(first.url)
+                }
+            }
         } catch {
-            errorMessage = error.localizedDescription
+            self.error = error.localizedDescription
         }
     }
 }

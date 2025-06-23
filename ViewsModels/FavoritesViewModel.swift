@@ -1,54 +1,42 @@
 import SwiftUI
 
 @MainActor
-class FavoritesViewModel: ObservableObject {
+final class FavoritesViewModel: ObservableObject {
     @Published var favorites: [SaleListing] = []
-    @Published var loading = false
-    
-    private let userService = UserService()
-    
-    func loadFavorites() async {
-        guard let token = APIClient.shared.authToken,
-              let userId = decodeUserIdFromToken(token: token) else {
-            return
-        }
-        loading = true
-        defer { loading = false }
+    @Published var isLoading = false
+    @Published var error: String?
+
+    private let userSvc = UserService()
+    private let listSvc = ListingService()
+
+
+func load() async {
+        guard let userId = APIClient.shared.currentUserId() else { return }
+        isLoading = true; error = nil
+        defer { isLoading = false }
         do {
-            // Получаем профиль текущего пользователя
-            let user = try await userService.fetchUserProfile(userId: userId)
-            favorites = user.favoriteListings ?? []
-            
-            // Загрузить для каждого избранного объявления первую фотографию (как в ListingsViewModel)
-            // и при необходимости адрес.
-            for i in 0..<favorites.count {
-                let listingId = favorites[i].id
-                let photos = try await ListingService().fetchListingPhotos(listingId: listingId)
+            let me = try await userSvc.fetchUserProfile(id: userId)
+            favorites = me.favoriteListings ?? []
+
+            for idx in favorites.indices {
+                let photos = try await listSvc.fetchListingPhotos(listingId: favorites[idx].id)
                 if let first = photos.first {
-                    favorites[i].coverPhotoURL = APIClient.shared.baseURL.appendingPathComponent(first.url)
+                    favorites[idx].coverPhotoURL =
+                        APIClient.shared.baseURL.appendingPathComponent(first.url)
                 }
             }
         } catch {
-            print("Ошибка загрузки избранного: \(error)")
+            self.error = error.localizedDescription
         }
     }
-    
-    func removeFromFavorites(listing: SaleListing) async {
-        guard let token = APIClient.shared.authToken,
-              let userId = decodeUserIdFromToken(token: token) else { return }
+
+    func remove(_ listing: SaleListing) async {
+        guard let userId = APIClient.shared.currentUserId() else { return }
         do {
-            try await userService.removeFavorite(listingId: listing.id, for: userId)
-            // Обновляем локально список
+            try await userSvc.removeFavorite(listingId: listing.id)
             favorites.removeAll { $0.id == listing.id }
         } catch {
-            print("Ошибка удаления из избранного: \(error)")
+            self.error = error.localizedDescription
         }
-    }
-    
-    private func decodeUserIdFromToken(token: String) -> Int? {
-        // JWT токен содержит UserId в поле sub (JwtRegisteredClaimNames.Sub).
-        // Можно декодировать JWT (например, разделить по '.', декодировать payload Base64 и прочитать JSON).
-        // Для упрощения, предположим, что мы сохранили текущий userId где-то при логине.
-        return nil
     }
 }

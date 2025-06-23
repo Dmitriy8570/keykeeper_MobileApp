@@ -1,20 +1,20 @@
-struct CreateUserRequest: Codable{
+struct CreateUserRequest: Codable {
     let firstName: String
     let lastName: String
     let email: String
     let password: String
 }
 
-struct RegisterUserResponse: Codable{
-    let userId: Int
-    let email: String
-}
-
-struct LoginUserRequest: Codable{
+struct LoginUserRequest: Codable {
     let email: String
     let password: String
 }
 
-struct LoginUserResponse: Codable{
+struct RegisterUserResponse: Codable {
+    let userId: Int
+}
+
+struct LoginUserResponse: Codable {
     let token: String
 }
+

@@ -1,13 +1,18 @@
 import Foundation
 
-struct User: Codable, Identifiable{
+struct User: Decodable, Identifiable {
     let id: Int
     let firstName: String
     let lastName: String
     let email: String
     let phoneNumber: String?
-    let registrationDate: String
-    let lastLoginDate: String
-    
     let favoriteListings: [SaleListing]?
 }
+
+struct AddFavoriteRequest: Encodable {
+    let userId: Int
+    let saleListingId: Int
+}
+
+
+// UserService.swift...

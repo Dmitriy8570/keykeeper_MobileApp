@@ -1,82 +1,81 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @StateObject var viewModel = ProfileViewModel()
-    @State private var showingEditProfile = false
-    
+    @StateObject private var vm = ProfileViewModel()
+    @State private var showingLogin = false
+    @State private var confirmLogout = false
+
     var body: some View {
-        NavigationView {
-            if APIClient.shared.authToken == nil {
-                VStack {
-                    Text("Войдите, чтобы просмотреть профиль и объявления.")
-                        .padding()
-                    Button("Войти") {
-                        // переход на экран логина
+        NavigationStack {
+            Group {
+                if APIClient.shared.authToken == nil {
+                    VStack(spacing: 16) {
+                        Text("Профиль недоступен.\nВойдите или зарегистрируйтесь.")
+                            .multilineTextAlignment(.center)
+                        HStack {
+                            Button("Войти") { showingLogin = true }
+                            Button("Регистрация") { showingLogin = true /* можно RegisterView */ }
+                        }.buttonStyle(.borderedProminent)
                     }
-                    Button("Регистрация") {
-                        // переход на экран регистрации
-                    }
+                } else if vm.isLoading {
+                    ProgressView("Загрузка…")
+                } else if let err = vm.error {
+                    Text(err).foregroundColor(.red)
+                } else if let user = vm.user {
+                    profileSection(for: user)
                 }
-            } else {
-                VStack(alignment: .leading) {
-                    if let user = viewModel.user {
-                        Text("\(user.firstName) \(user.lastName)")
-                            .font(.title2).bold()
-                        Text(user.email).foregroundColor(.secondary)
-                        if let phone = user.phoneNumber, !phone.isEmpty {
-                            Text("Телефон: \(phone)")
-                        }
-                        Button("Редактировать профиль") {
-                            showingEditProfile = true
-                        }.padding(.vertical, 8)
-                        Divider()
-                    } else if viewModel.loading {
-                        ProgressView("Загрузка профиля...")
-                    }
-                    
-                    Text("Мои объявления:")
-                        .font(.headline).padding(.vertical, 5)
-                    if viewModel.myListings.isEmpty {
-                        Text("У вас пока нет размещенных объявлений.")
-                            .foregroundColor(.secondary)
-                    } else {
-                        List {
-                            ForEach(viewModel.myListings) { listing in
-                                ListingRowView(listing: listing)
-                                    .swipeActions(edge: .trailing) {
-                                        Button("Удалить", role: .destructive) {
-                                            Task {
-                                                try? await ListingService().deleteListing(listingId: listing.id)
-                                                // Обновим список после удаления
-                                                await viewModel.loadProfile()
-                                            }
-                                        }
-                                        Button("Изменить") {
-                                            // Открыть экран редактирования объявления (можно переиспользовать форму NewListingFormView с предварительным заполнением)
-                                        }
-                                    }
-                                    .onTapGesture {
-                                        // открыть детальный просмотр (можно использовать тот же ListingDetailView)
-                                    }
-                            }
-                        }
-                    }
-                    Spacer()
-                    Button("Выйти") {
-                        viewModel.logout()
-                    }
-                    .foregroundColor(.red)
-                    .padding(.top, 20)
-                }
-                .padding()
-                .navigationTitle("Профиль")
-                //.sheet(isPresented: $showingEditProfile) {
-                    //EditProfileView(user: viewModel.user!)
-                //}
             }
+            .navigationTitle("Профиль")
+            .toolbar {
+                if vm.user != nil {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Выход") { confirmLogout = true }
+                    }
+                }
+            }
+            .confirmationDialog("Выйти из аккаунта?",
+                                isPresented: $confirmLogout) {
+                Button("Выйти", role: .destructive) { vm.logout() }
+            }
+            .task { await vm.load() }
+            .sheet(isPresented: $showingLogin) { LoginView() }
         }
-        .onAppear {
-            Task { await viewModel.loadProfile() }
+    }
+
+    // MARK: - UI
+    @ViewBuilder private func profileSection(for user: User) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("\(user.firstName) \(user.lastName)")
+                .font(.title2).bold()
+            Text(user.email).font(.subheadline)
+            if let phone = user.phoneNumber, !phone.isEmpty {
+                Text("Телефон: \(phone)")
+            }
+
+            Divider().padding(.vertical, 4)
+
+            Text("Мои объявления").font(.headline)
+            if vm.myListings.isEmpty {
+                Text("Вы ещё не разместили объявлений.")
+                    .foregroundColor(.secondary)
+            } else {
+                List {
+                    ForEach(vm.myListings) { lst in
+                        NavigationLink(value: lst) {
+                            ListingRowView(listing: lst)
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                Task { await vm.deleteListing(lst) }
+                            } label: { Label("Удалить", systemImage: "trash") }
+                        }
+                    }
+                }
+                .frame(maxHeight: 350)
+            }
+            Spacer(minLength: 0)
         }
+        .navigationDestination(for: SaleListing.self) { ListingDetailView(listing: $0) }
+        .padding()
     }
 }

@@ -1,66 +1,76 @@
 import SwiftUI
+import MapKit   // для коорд-выбора (упрощённо)
 
 struct NewListingFormView: View {
-    @StateObject var viewModel = NewListingViewModel()
-    @State private var showingMapPicker = false
-    
+    @StateObject private var vm = NewListingViewModel()
+
     var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Об объекте")) {
-                    Picker("Тип недвижимости", selection: $viewModel.propertyTypeIndex) {
-                        ForEach(0..<viewModel.propertyTypes.count, id: \.self) { i in
-                            Text(viewModel.propertyTypes[i]).tag(i)
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 14) {
+                    // --- тип ---
+                    Picker("Тип недвижимости", selection: $vm.selectedTypeIndex) {
+                        ForEach(vm.propertyTypes.indices, id: \.self) { idx in
+                            Text(vm.propertyTypes[idx].name).tag(idx)
                         }
                     }
-                    TextField("Цена (₽)", text: $viewModel.price)
-                        .keyboardType(.numberPad)
-                    TextField("Описание", text: $viewModel.description, axis: .vertical)
-                        .lineLimit(5)
-                }
-                Section(header: Text("Адрес")) {
-                    TextField("Регион (область)", text: $viewModel.region)
-                    TextField("Район", text: $viewModel.district)
-                    TextField("Город / Населенный пункт", text: $viewModel.settlement)
-                    TextField("Муниципалитет", text: $viewModel.municipalite)
-                    TextField("Улица", text: $viewModel.street)
-                    TextField("Номер дома", text: $viewModel.houseNumber)
-                    Button(action: { showingMapPicker = true }) {
-                        if let lat = viewModel.latitude, let lon = viewModel.longitude {
-                            Text("Координаты выбраны (\(String(format: "%.4f", lat)), \(String(format: "%.4f", lon)))")
-                        } else {
-                            Text("Выбрать на карте")
-                        }
+                    .pickerStyle(.menu)
+
+                    // --- адрес ---
+                    Group {
+                        TextField("Регион", text: $vm.region)
+                        TextField("Муниципалитет", text: $vm.municipalite)
+                        TextField("Нас. пункт", text: $vm.settlement)
+                        TextField("Район", text: $vm.district)
+                        TextField("Улица", text: $vm.street)
+                        TextField("Дом", text: $vm.houseNumber)
                     }
+                    .textFieldStyle(.roundedBorder)
+
+                    // --- параметры ---
+                    Group {
+                        TextField("Цена (₽)", text: $vm.price)
+                            .keyboardType(.numberPad)
+                        TextField("Площадь (м²)", text: $vm.area)
+                            .keyboardType(.decimalPad)
+                        TextField("Комнат", text: $vm.roomCount)
+                            .keyboardType(.numberPad)
+                        TextField("Этаж", text: $vm.floor)
+                            .keyboardType(.numberPad)
+                        TextField("Этажей в доме", text: $vm.totalFloors)
+                            .keyboardType(.numberPad)
+                    }
+                    .textFieldStyle(.roundedBorder)
+
+                    // --- описание ---
+                    TextEditor(text: $vm.description)
+                        .frame(height: 120)
+                        .overlay(RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.secondary.opacity(0.3)))
+
+                    // --- кнопка ---
+                    if let err = vm.error {
+                        Text(err).foregroundColor(.red)
+                    }
+                    Button("Опубликовать") {
+                        Task { await vm.publish() }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(vm.isPosting)
                 }
-                Section(header: Text("Характеристики")) {
-                    TextField("Этаж", text: $viewModel.floor)
-                        .keyboardType(.numberPad)
-                    TextField("Этажность дома", text: $viewModel.totalFloors)
-                        .keyboardType(.numberPad)
-                    TextField("Количество комнат", text: $viewModel.roomCount)
-                        .keyboardType(.numberPad)
-                    TextField("Площадь (кв.м.)", text: $viewModel.area)
-                        .keyboardType(.decimalPad)
-                }
-                if let error = viewModel.errorMessage {
-                    Text(error).foregroundColor(.red)
-                }
-                Button("Опубликовать") {
-                    Task { await viewModel.publishListing() }
-                }
-                .disabled(viewModel.isPosting)
+                .padding()
             }
             .navigationTitle("Новое объявление")
-            .sheet(isPresented: $showingMapPicker) {
-                // Представляем MapPickerViewController например,
-                // где пользователь может выбрать точку на карте.
-                // После выбора устанавливаем viewModel.latitude/longitude
-            }
-            .alert(isPresented: $viewModel.postSuccess) {
-                Alert(title: Text("Объявление опубликовано"),
-                      message: Text("Теперь вы можете добавить фотографии."),
-                      dismissButton: .default(Text("OK")))
+            .task { await vm.loadDictionaries() }
+
+            // переход к загрузке фото
+            .navigationDestination(isPresented:
+                Binding(get: { vm.newListingId != nil },
+                        set: { if !$0 { vm.newListingId = nil } })
+            ) {
+                if let id = vm.newListingId {
+                    UploadPhotosView(listingId: id)
+                }
             }
         }
     }

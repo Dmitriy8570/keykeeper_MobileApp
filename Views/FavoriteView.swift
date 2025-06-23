@@ -1,57 +1,49 @@
 import SwiftUI
 
 struct FavoritesView: View {
-    @StateObject var viewModel = FavoritesViewModel()
-    
+    @StateObject private var vm = FavoritesViewModel()
+    @State private var showingLogin = false
+
     var body: some View {
-        NavigationView {
-            if APIClient.shared.authToken == nil {
-                // Неавторизованный пользователь
-                VStack {
-                    Text("Войдите, чтобы просматривать избранные объявления.")
-                        .padding()
-                    HStack {
-                        Button("Войти") {
-                            // открыть экран логина
-                        }
-                        Button("Регистрация") {
-                            // открыть экран регистрации
-                        }
+        NavigationStack {
+            Group {
+                if APIClient.shared.authToken == nil {
+                    VStack(spacing: 16) {
+                        Text("Войдите, чтобы видеть избранное.")
+                        Button("Войти") { showingLogin = true }
+                            .buttonStyle(.borderedProminent)
                     }
-                }
-            } else {
-                VStack {
-                    if viewModel.loading {
-                        ProgressView("Загрузка избранного...")
-                    }
-                    if viewModel.favorites.isEmpty && !viewModel.loading {
-                        Text("У вас пока нет избранных объявлений.")
-                            .foregroundColor(.secondary)
-                    } else {
-                        List {
-                            ForEach(viewModel.favorites) { listing in
-                                ListingRowView(listing: listing)
-                                    .swipeActions {  // удобный способ для SwiftUI
-                                        Button(role: .destructive) {
-                                            Task { await viewModel.removeFromFavorites(listing: listing) }
-                                        } label: {
-                                            Text("Удалить")
-                                        }
-                                    }
-                                    .onTapGesture {
-                                        // перейти к деталям объявления
-                                    }
+                } else if vm.isLoading {
+                    ProgressView("Загрузка…")
+                } else if let err = vm.error {
+                    Text(err).foregroundColor(.red).padding()
+                } else if vm.favorites.isEmpty {
+                    Text("Избранных объявлений нет.").foregroundColor(.secondary)
+                } else {
+                    List {
+                        ForEach(vm.favorites) { fav in
+                            NavigationLink(value: fav) {
+                                ListingRowView(listing: fav)
+                            }
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    Task { await vm.remove(fav) }
+                                } label: { Label("Удалить", systemImage: "trash") }
                             }
                         }
                     }
+                    .listStyle(.plain)
                 }
-                .navigationTitle("Избранное")
             }
-        }
-        .onAppear {
-            if APIClient.shared.authToken != nil {
-                Task { await viewModel.loadFavorites() }
+            .navigationTitle("Избранное")
+            .navigationDestination(for: SaleListing.self) { ListingDetailView(listing: $0) }
+            .task {
+                if APIClient.shared.authToken != nil { await vm.load() }
             }
+            .refreshable {
+                if APIClient.shared.authToken != nil { await vm.load() }
+            }
+            .sheet(isPresented: $showingLogin) { LoginView() }
         }
     }
 }

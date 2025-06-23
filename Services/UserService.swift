@@ -1,23 +1,36 @@
 import Foundation
 
 struct UserService {
-    func fetchUserProfile(userId: Int) async throws -> User{
-        let endpoint = "api/Users/\(userId)"
-        let user: User = try await APIClient.shared.sendRequest(endpoint, authorize: true)
-        return user
+
+    // PATCH /api/Users   { userId, saleListingId }
+    func addFavorite(listingId: Int, userId: Int) async throws {
+        let body = try JSONEncoder().encode(
+            AddFavoriteRequest(userId: userId, saleListingId: listingId))
+
+        _ = try await APIClient.shared.sendRequest(
+            "api/Users",
+            method: "PATCH",
+            body: body,
+            authorize: true,
+            responseType: EmptyResponse.self
+        )
     }
-    
-    func addFavorite(listingId: Int, for userId: Int) async throws {
-        let request = AddFavoriteListRequest(userId: userId, saleListingId: listingId)
-        let body = try JSONEncoder().encode(request)
-        try await APIClient.shared.sendRequest("api/Users", method: "PATCH", body: body, authorize: true)
+
+    // DELETE /api/Users/favorite/{listingId}
+    func removeFavorite(listingId: Int) async throws {
+        _ = try await APIClient.shared.sendRequest(
+            "api/Users/favorite/\(listingId)",
+            method: "DELETE",
+            authorize: true,
+            responseType: EmptyResponse.self
+        )
     }
-    
-    func removeFavorite(listingId: Int, for userId: Int) async throws{
-        _ = try await APIClient.shared.sendRequest("api/Users/favorite/\(listingId)", method: "Delete", authorize: true)
-    }
-    
-    func deleteAccount(userId: Int) async throws {
-        _ = try await APIClient.shared.sendRequest("api/users/\(userId)", method: "DELETE", authorize: true)
+
+    // GET /api/Users/{id}
+    func fetchUserProfile(id: Int) async throws -> User {
+        try await APIClient.shared.sendRequest(
+            "api/Users/\(id)",
+            authorize: true
+        )
     }
 }

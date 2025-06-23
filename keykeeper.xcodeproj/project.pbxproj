@@ -30,6 +30,14 @@
 		7DA1C84A2E0880DF00ACE8F0 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 7DA1C8492E0880DF00ACE8F0 /* Alamofire */; };
 		7DA1C84F2E0889B200ACE8F0 /* JWTDecode in Frameworks */ = {isa = PBXBuildFile; productRef = 7DA1C84E2E0889B200ACE8F0 /* JWTDecode */; };
 		7DA1C8552E088C3300ACE8F0 /* ListingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA1C8542E088C3300ACE8F0 /* ListingsViewModel.swift */; };
+		7DA1C8692E08BDD600ACE8F0 /* Address.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA1C8682E08BDD600ACE8F0 /* Address.swift */; };
+		7DA1C86B2E08BE2700ACE8F0 /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA1C86A2E08BE2700ACE8F0 /* Helpers.swift */; };
+		7DA1C86D2E08C05F00ACE8F0 /* GeoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA1C86C2E08C05F00ACE8F0 /* GeoService.swift */; };
+		7DA1C86F2E08C3A200ACE8F0 /* UploadPhotosViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA1C86E2E08C3A200ACE8F0 /* UploadPhotosViewModel.swift */; };
+		7DA1C8712E08C61800ACE8F0 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA1C8702E08C61800ACE8F0 /* LoginView.swift */; };
+		7DA1C8732E08C7C400ACE8F0 /* ListingRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA1C8722E08C7C400ACE8F0 /* ListingRowView.swift */; };
+		7DA1C8752E08C81000ACE8F0 /* UploadPhotosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA1C8742E08C81000ACE8F0 /* UploadPhotosView.swift */; };
+		7DA1C8772E08C85400ACE8F0 /* PhotoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA1C8762E08C85400ACE8F0 /* PhotoPicker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +63,14 @@
 		7DA1C82A2E087C2000ACE8F0 /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
 		7DA1C82B2E087C5100ACE8F0 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		7DA1C8542E088C3300ACE8F0 /* ListingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListingsViewModel.swift; sourceTree = "<group>"; };
+		7DA1C8682E08BDD600ACE8F0 /* Address.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Address.swift; sourceTree = "<group>"; };
+		7DA1C86A2E08BE2700ACE8F0 /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
+		7DA1C86C2E08C05F00ACE8F0 /* GeoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoService.swift; sourceTree = "<group>"; };
+		7DA1C86E2E08C3A200ACE8F0 /* UploadPhotosViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadPhotosViewModel.swift; sourceTree = "<group>"; };
+		7DA1C8702E08C61800ACE8F0 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		7DA1C8722E08C7C400ACE8F0 /* ListingRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListingRowView.swift; sourceTree = "<group>"; };
+		7DA1C8742E08C81000ACE8F0 /* UploadPhotosView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadPhotosView.swift; sourceTree = "<group>"; };
+		7DA1C8762E08C85400ACE8F0 /* PhotoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPicker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -107,6 +123,7 @@
 				7D3926B52E0835540041EF82 /* User.swift */,
 				7D3926B32E0834C30041EF82 /* Photo.swift */,
 				7D3926B12E0833690041EF82 /* SaleListing.swift */,
+				7DA1C8682E08BDD600ACE8F0 /* Address.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -118,6 +135,7 @@
 				7DA1C8082E08545500ACE8F0 /* ListingService.swift */,
 				7DA1C8052E0850EB00ACE8F0 /* AuthService.swift */,
 				7D3926B82E08369C0041EF82 /* APIClient.swift */,
+				7DA1C86C2E08C05F00ACE8F0 /* GeoService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -126,6 +144,8 @@
 			isa = PBXGroup;
 			children = (
 				7D6E67DC2E083D8B00952F5F /* KeychainHelper.swift */,
+				7DA1C86A2E08BE2700ACE8F0 /* Helpers.swift */,
+				7DA1C8762E08C85400ACE8F0 /* PhotoPicker.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -139,6 +159,9 @@
 				7DA1C8252E087B0000ACE8F0 /* ListingDetailView.swift */,
 				7DA1C8222E087A6000ACE8F0 /* ListingsListView.swift */,
 				7DA1C8212E087A3E00ACE8F0 /* MainTabView.swift */,
+				7DA1C8702E08C61800ACE8F0 /* LoginView.swift */,
+				7DA1C8722E08C7C400ACE8F0 /* ListingRowView.swift */,
+				7DA1C8742E08C81000ACE8F0 /* UploadPhotosView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -151,6 +174,7 @@
 				7DA1C8282E087B9A00ACE8F0 /* NewListingViewModel.swift */,
 				7DA1C8262E087B3200ACE8F0 /* FavoritesViewModel.swift */,
 				7DA1C8232E087AAE00ACE8F0 /* ListingDetailViewModel.swift */,
+				7DA1C86E2E08C3A200ACE8F0 /* UploadPhotosViewModel.swift */,
 			);
 			path = ViewsModels;
 			sourceTree = "<group>";
@@ -232,23 +256,31 @@
 			buildActionMask = 2147483647;
 			files = (
 				7DA1C83B2E08805800ACE8F0 /* KeychainHelper.swift in Sources */,
+				7DA1C86D2E08C05F00ACE8F0 /* GeoService.swift in Sources */,
 				7DA1C83C2E08805800ACE8F0 /* APIClient.swift in Sources */,
 				7DA1C83D2E08805800ACE8F0 /* NewListingFormView.swift in Sources */,
 				7DA1C83E2E08805800ACE8F0 /* FavoriteView.swift in Sources */,
 				7DA1C83F2E08805800ACE8F0 /* ListingsListView.swift in Sources */,
 				7DA1C8402E08805800ACE8F0 /* UserService.swift in Sources */,
+				7DA1C8692E08BDD600ACE8F0 /* Address.swift in Sources */,
+				7DA1C8772E08C85400ACE8F0 /* PhotoPicker.swift in Sources */,
 				7DA1C8412E08805800ACE8F0 /* NewListingViewModel.swift in Sources */,
 				7DA1C8422E08805800ACE8F0 /* ProfileView.swift in Sources */,
 				7DA1C8432E08805800ACE8F0 /* ListingDetailViewModel.swift in Sources */,
 				7DA1C8442E08805800ACE8F0 /* FavoritesViewModel.swift in Sources */,
+				7DA1C86B2E08BE2700ACE8F0 /* Helpers.swift in Sources */,
 				7DA1C8452E08805800ACE8F0 /* ProfileViewModel.swift in Sources */,
 				7DA1C8462E08805800ACE8F0 /* ListingService.swift in Sources */,
 				7DA1C8472E08805800ACE8F0 /* ListingDetailView.swift in Sources */,
 				7DA1C8482E08805800ACE8F0 /* AuthService.swift in Sources */,
+				7DA1C8752E08C81000ACE8F0 /* UploadPhotosView.swift in Sources */,
 				7D3926B42E0834CF0041EF82 /* Photo.swift in Sources */,
 				7DA1C8072E0851A600ACE8F0 /* AuthModels.swift in Sources */,
+				7DA1C8732E08C7C400ACE8F0 /* ListingRowView.swift in Sources */,
 				7DA1C80A2E08549C00ACE8F0 /* ListingModels.swift in Sources */,
+				7DA1C8712E08C61800ACE8F0 /* LoginView.swift in Sources */,
 				7DA1C83A2E08800D00ACE8F0 /* MainTabView.swift in Sources */,
+				7DA1C86F2E08C3A200ACE8F0 /* UploadPhotosViewModel.swift in Sources */,
 				7D3926B22E0833690041EF82 /* SaleListing.swift in Sources */,
 				7DA1C8552E088C3300ACE8F0 /* ListingsViewModel.swift in Sources */,
 				7D3926B62E08355A0041EF82 /* User.swift in Sources */,

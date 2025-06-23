@@ -1,64 +1,89 @@
 import SwiftUI
 
 struct ListingDetailView: View {
-    @StateObject var viewModel: ListingDetailViewModel
-    
+    @StateObject private var vm: ListingDetailViewModel
+    @Environment(\.dismiss) private var dismiss
+    @State private var showingLogin = false
+
+    init(listing: SaleListing) {
+        _vm = StateObject(wrappedValue: ListingDetailViewModel(listing: listing))
+    }
+
     var body: some View {
         ScrollView {
-            // Галерея фотографий - горизонтальный ScrollView
-            if !viewModel.photos.isEmpty {
-                ScrollView(.horizontal, showsIndicators: true) {
-                    HStack {
-                        ForEach(viewModel.photos) { photo in
-                            if let url = URL(string: APIClient.shared.baseURL.absoluteString + photo.url) {
-                                // загрузка изображения аналогично AsyncImage
-                                AsyncImage(url: url) { phase in /* ... */ }
-                                    .frame(width: 300, height: 200)
-                                    .clipped().cornerRadius(10)
-                            }
-                        }
-                    }.padding()
+            VStack(alignment: .leading) {
+                photosPager
+
+                Text("\(vm.listing.price) ₽")
+                    .font(.largeTitle).bold().padding(.top)
+
+                if let addr = vm.listing.addressText {
+                    Text(addr).font(.title3)
                 }
-            } else {
-                Text("Нет фотографий").foregroundColor(.secondary)
-            }
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("\(viewModel.listing.price) ₽")
-                    .font(.largeTitle).bold()
-                Text(viewModel.listing.description)
+
+                Divider().padding(.vertical, 4)
+
+                Text(vm.listing.description)
                     .font(.body)
-                if let area = viewModel.listing.area {
-                    Text("Площадь: \(area) кв.м.")
+
+                if let contact = vm.sellerContact {
+                    Divider().padding(.vertical, 8)
+                    Text(contact).font(.headline)
                 }
-                if let rooms = viewModel.listing.roomCount {
-                    Text("Комнат: \(rooms)")
-                }
-                if let floor = viewModel.listing.floor {
-                    let total = viewModel.listing.totalFloors ?? 0
-                    Text("Этаж: \(floor)\(total > 0 ? " из \(total)" : "")")
-                }
-                if let address = viewModel.listing.addressText {
-                    Text("Адрес: \(address)")
-                }
-                Divider()
-                if let contact = viewModel.sellerContact {
-                    // Показываем контакт только для авторизованных
-                    Text("Контакты продавца:").font(.headline)
-                    Text(contact).font(.subheadline)
-                } else {
-                    Text("Войдите, чтобы увидеть контакты продавца.")
-                        .foregroundColor(.blue)
-                        .onTapGesture {
-                            // переход к экрану входа/регистрации
-                        }
+
+                if let err = vm.error {
+                    Text(err).foregroundColor(.red).padding(.top, 6)
                 }
             }
             .padding()
         }
         .navigationTitle("Объявление")
-        .onAppear {
-            Task { await viewModel.loadDetails() }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    Task {
+                        if APIClient.shared.authToken == nil {
+                            showingLogin = true
+                        } else {
+                            await vm.toggleFavorite()
+                        }
+                    }
+                } label: {
+                    Image(systemName: vm.isFavorite ? "heart.fill" : "heart")
+                }
+            }
         }
+        .sheet(isPresented: $showingLogin) { LoginView() }
+        .task { await vm.load() }
+    }
+
+    // MARK: - Фото-карусель
+    private var photosPager: some View {
+        Group {
+            if vm.photos.isEmpty {
+                Color.gray.opacity(0.3)
+                    .frame(height: 260)
+                    .overlay(Image(systemName: "photo").font(.largeTitle))
+            } else {
+                TabView {
+                    ForEach(vm.photos) { photo in
+                        AsyncImage(
+                            url: APIClient.shared.baseURL.appendingPathComponent(photo.url)) { phase in
+                                switch phase {
+                                case .success(let img):
+                                    img.resizable().scaledToFill()
+                                case .failure:
+                                    Color.red.opacity(0.2)
+                                default:
+                                    Color.gray.opacity(0.2)
+                                }
+                            }
+                    }
+                }
+                .frame(height: 260)
+                .tabViewStyle(.page)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
